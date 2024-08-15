@@ -66,7 +66,8 @@ int main(void)
         for (counter = 0; counter < SIZE; counter++)
             name_source[counter] = '\0';
         counter_symbol = 0;
-        fprintf(stdout, "¬ведите им€ исходного файла (или пустую строку дл€ завершени€):\n");
+        //fprintf(stdout, "¬ведите им€ исходного файла (или пустую строку дл€ завершени€):\n");
+        fprintf(stdout, "Enter a name for the source file (or empty text to complete):\n");
         for (counter = 0; (read_symbol = getc(stdin)) != '\n'; counter++)
             name_source[counter] = read_symbol;
     }
