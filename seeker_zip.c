@@ -16,7 +16,7 @@ int main(void)
     FILE *ft;
     int counter;
     int read;
-    unsigned char read_symbol;
+    int read_symbol;
     unsigned char source_symbol;
     int counter_symbol = 0;
     const char Local_file_headers_signature[5] = "\x50\x4b\x03\x04";
@@ -27,6 +27,10 @@ int main(void)
     int x50x4bx05x06 = 0;
     int File_name_length = 0;
     int File_name_length_1 = 0;
+    int zero_byte_offset = 0;
+    int first_byte_offset = 0;
+    int second_byte_offset = 0;
+    int third_byte_offset = 0;
 
     //fprintf(stdout, "Введите имя исходного файла (или пустую строку для завершения):\n");
     fprintf(stdout, "Enter a name for the source file (or empty text to complete):\n");
@@ -41,7 +45,7 @@ int main(void)
             goto end_circle;
         }
         #if 0
-        sprintf(name_target, "%s_bytes_list", "zip_uchar");
+        sprintf(name_target, "%s_bytes_list", name_source);
         if((ft = fopen(name_target, "ab+")) == NULL)
         {
             fprintf(stderr, "Не удается открыть файл %s\n", name_target);
@@ -100,7 +104,7 @@ int main(void)
                             x50x4bx01x02 = 0;
                             x50x4bx05x06 = 0;
            }
-           #if 0
+           #if 15
            if(x50x4bx03x04 == 4)
            {
               counter = 22;
@@ -160,6 +164,16 @@ int main(void)
            #endif // 0
            if(x50x4bx05x06 == 4)
            {
+              counter = 12;
+              while(counter > 0)
+              {
+                  getc(fs);
+                  counter--;
+              }
+              zero_byte_offset = getc(fs);
+              first_byte_offset = getc(fs);
+              second_byte_offset = getc(fs);
+              third_byte_offset = getc(fs);
 
            }
         }
