@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
+//#include <windows.h>
 #define SIZE 500
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    SetConsoleCP(1251);
-    SetConsoleOutputCP(1251);
+    //SetConsoleCP(1251);
+    //SetConsoleOutputCP(1251);
 
     char *source_string = (char *)calloc(SIZE, sizeof(char));
     char name_target[SIZE] = {0};
@@ -31,11 +31,14 @@ int main(void)
     int first_byte_offset = 0;
     int second_byte_offset = 0;
     int third_byte_offset = 0;
+    unsigned long long int all_offset = 0;
     int counter_Local_file_headers_signature = 0;
     int counter_Central_directory_file_header_signature = 0;
     int counter_End_of_central_directory_record_signature = 0;
     int flag_zip = 0;
 
+    if(argc < 2)
+    {
     //fprintf(stdout, "Введите имя исходного файла (или пустую строку для завершения):\n");
     fprintf(stdout, "Enter a name for the source file (or empty text to complete):\n");
     for (counter = 0; (read_symbol = getc(stdin)) != '\n'; counter++)
@@ -56,14 +59,13 @@ int main(void)
             goto end_circle;
         }
 
-        while((read = getc(fs)) != EOF)
+        while((read_symbol = getc(fs)) != EOF)
         {
            counter_symbol++;
-           source_symbol = read;
-           if(source_symbol < 16)
-               fprintf(ft, "0x0%x, ", source_symbol);
+           if(read_symbol < 16)
+               fprintf(ft, "0x0%x, ", read_symbol);
            else
-               fprintf(ft, "0x%x, ", source_symbol);
+               fprintf(ft, "0x%x, ", read_symbol);
         }
         //fprintf(stdout, "В файле %s символ %c встречается %d раз.\n", name_source, source_symbol, counter_symbol);
         fprintf(stdout, "%d\n", counter_symbol);
@@ -131,7 +133,8 @@ int main(void)
               }
               if(flag_zip == 0)
               {
-                  printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  //printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  printf("This file contains a ZIP archive. Files included in this ZIP archive:\n");
                   flag_zip = 1;
               }
               printf("%s\n", name_target);
@@ -168,7 +171,8 @@ int main(void)
               }
               if(flag_zip == 0)
               {
-                  printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  //printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  printf("This file contains a ZIP archive. Files included in this ZIP archive:\n");
                   flag_zip = 1;
               }
               printf("%s\n", name_target);
@@ -191,8 +195,20 @@ int main(void)
               third_byte_offset = getc(fs);
               if(flag_zip == 0)
               {
-                  printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  //printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  printf("This file contains a ZIP archive. Files included in this ZIP archive:\n");
                   flag_zip = 1;
+              }
+              all_offset = third_byte_offset * 16 * 16 * 16 * 16 * 16 * 16 +
+              second_byte_offset * 16 * 16 * 16 * 16 +
+              first_byte_offset * 16 * 16 +
+              zero_byte_offset;
+              if(all_offset == 0)
+              {
+                  //printf("Этот ZIP-архив не содержит ни одного файла, т.к. Offset of cd wrt to starting disk равно 0.\n"
+                   //      "Т.е. данный ZIP-архив является пустым.\n");
+                  printf("This ZIP archive does not contain any files, because Offset of cd wrt to starting disk equals 0.\n"
+                         "That is this ZIP archive is empty.\n");
               }
               counter_End_of_central_directory_record_signature++;
            }
@@ -201,22 +217,61 @@ int main(void)
            counter_Central_directory_file_header_signature == 0 &&
            counter_End_of_central_directory_record_signature == 0)
         {
-           printf("Этот файл не содержит ни одного из признаков ZIP-архива:\n");
-           printf("1) Сигнатура Local file headers \"\\x50\\x4b\\x03\\x04\" отсутствует.\n");
-           printf("2) Сигнатура Central directory file header \"\\x50\\x4b\\x01\\x02\" отсутствует.\n");
-           printf("3) Сигнатура End of central directory record \"\\x50\\x4b\\x05\\x06\" отсутствует.\n");
+           //printf("Этот файл не содержит ни одного из признаков ZIP-архива:\n");
+           //printf("1) Сигнатура Local file headers \"\\x50\\x4b\\x03\\x04\" отсутствует.\n");
+           //printf("2) Сигнатура Central directory file header \"\\x50\\x4b\\x01\\x02\" отсутствует.\n");
+           //printf("3) Сигнатура End of central directory record \"\\x50\\x4b\\x05\\x06\" отсутствует.\n");
+           printf("This file does not contain any of the features of a ZIP archive:\n");
+           printf("1) Signature Local file headers \"\\x50\\x4b\\x03\\x04\" absent.\n");
+           printf("2) Signature Central directory file header \"\\x50\\x4b\\x01\\x02\" absent.\n");
+           printf("3) Signature End of central directory record \"\\x50\\x4b\\x05\\x06\" absent.\n");
 
         }
 
         end_circle:
         memset(name_source, 0, SIZE);
+        counter_Local_file_headers_signature = 0;
+        counter_Central_directory_file_header_signature = 0;
+        counter_End_of_central_directory_record_signature = 0;
+        zero_byte_offset = 0;
+        first_byte_offset = 0;
+        second_byte_offset = 0;
+        third_byte_offset = 0;
+        all_offset = 0;
+        flag_zip = 0;
         counter_symbol = 0;
         //fprintf(stdout, "Введите имя исходного файла (или пустую строку для завершения):\n");
         fprintf(stdout, "Enter a name for the source file (or empty text to complete):\n");
         for (counter = 0; (read_symbol = getc(stdin)) != '\n'; counter++)
             name_source[counter] = read_symbol;
     }
+    }
+    if(argc >= 2)
+    {
+        int counter_files = argc;
+        while (counter >= 2)
+        {
 
+            if ((fs = fopen(argv[argc - counter + 2], "rb")) == NULL)
+            {
+                fprintf(stderr, "Не удается открыть файл %s\n", argv[argc - counter + 2]);
+                goto end_circle12;
+            }
+            while((read_symbol = getc(fs)) != EOF)
+                if(read_symbol == source_symbol)
+                   counter_symbol++;
+            fprintf(stdout, "В файле %s символ %c встречается %d раз.\n", argv[argc - counter + 2], source_symbol, counter_symbol);
+
+            end_circle12:
+            //for (counter = 0; counter < SIZE; counter++)
+              //  name_source[counter] = '\0';
+            counter_symbol = 0;
+            counter--;
+            //fprintf(stdout, "Введите имя исходного файла (или пустую строку для завершения):\n");
+            //for (counter = 0; (read_symbol = getc(stdin)) != '\n'; counter++)
+              //  name_source[counter] = read_symbol;
+        }
+    }
     printf("Hello world!\n");
     return 0;
 }
