@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
-#define SIZE 1000
+#define SIZE 500
 
 int main(void)
 {
@@ -10,8 +10,8 @@ int main(void)
     SetConsoleOutputCP(1251);
 
     char *source_string = (char *)calloc(SIZE, sizeof(char));
-    char *name_source = (char*)calloc(SIZE, sizeof(char));
-    char *name_target = (char*)calloc(SIZE, sizeof(char));
+    char name_target[SIZE] = {0};
+    char name_source[SIZE] = {0};
     FILE *fs;
     FILE *ft;
     int counter;
@@ -20,8 +20,8 @@ int main(void)
     unsigned char source_symbol;
     int counter_symbol = 0;
     const char Local_file_headers_signature[5] = "\x50\x4b\x03\x04";
-    const char Central_directory_file_header[5] = "\x50\x4b\x01\x02";
-    const char End_of_central_directory_record[5] = "\x50\x4b\x05\x06";
+    const char Central_directory_file_header_signature[5] = "\x50\x4b\x01\x02";
+    const char End_of_central_directory_record_signature[5] = "\x50\x4b\x05\x06";
     int x50x4bx03x04 = 0;
     int x50x4bx01x02 = 0;
     int x50x4bx05x06 = 0;
@@ -31,6 +31,10 @@ int main(void)
     int first_byte_offset = 0;
     int second_byte_offset = 0;
     int third_byte_offset = 0;
+    int counter_Local_file_headers_signature = 0;
+    int counter_Central_directory_file_header_signature = 0;
+    int counter_End_of_central_directory_record_signature = 0;
+    int flag_zip = 0;
 
     //fprintf(stdout, "Введите имя исходного файла (или пустую строку для завершения):\n");
     fprintf(stdout, "Enter a name for the source file (or empty text to complete):\n");
@@ -125,9 +129,14 @@ int main(void)
                   *(name_target + counter) = getc(fs);
                   counter++;
               }
+              if(flag_zip == 0)
+              {
+                  printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  flag_zip = 1;
+              }
               printf("%s\n", name_target);
-              free(name_target);
-              name_target = (char*)calloc(SIZE, sizeof(char));
+              memset(name_target, 0, SIZE);
+              counter_Local_file_headers_signature++;
            }
            #endif // 2
            #if 1
@@ -157,9 +166,15 @@ int main(void)
                   *(name_target + counter) = getc(fs);
                   counter++;
               }
+              if(flag_zip == 0)
+              {
+                  printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  flag_zip = 1;
+              }
               printf("%s\n", name_target);
-              free(name_target);
-              name_target = (char*)calloc(SIZE, sizeof(char));
+              memset(name_target, 0, SIZE);
+              counter_Central_directory_file_header_signature++;
+
            }
            #endif // 0
            if(x50x4bx05x06 == 4)
@@ -174,13 +189,27 @@ int main(void)
               first_byte_offset = getc(fs);
               second_byte_offset = getc(fs);
               third_byte_offset = getc(fs);
-
+              if(flag_zip == 0)
+              {
+                  printf("Этот файл содержит ZIP-архив. Файлы входящие в данный ZIP-архив:\n");
+                  flag_zip = 1;
+              }
+              counter_End_of_central_directory_record_signature++;
            }
+        }
+        if(counter_Local_file_headers_signature == 0 &&
+           counter_Central_directory_file_header_signature == 0 &&
+           counter_End_of_central_directory_record_signature == 0)
+        {
+           printf("Этот файл не содержит ни одного из признаков ZIP-архива:\n");
+           printf("1) Сигнатура Local file headers \"\\x50\\x4b\\x03\\x04\" отсутствует.\n");
+           printf("2) Сигнатура Central directory file header \"\\x50\\x4b\\x01\\x02\" отсутствует.\n");
+           printf("3) Сигнатура End of central directory record \"\\x50\\x4b\\x05\\x06\" отсутствует.\n");
+
         }
 
         end_circle:
-        for (counter = 0; counter < SIZE; counter++)
-            name_source[counter] = '\0';
+        memset(name_source, 0, SIZE);
         counter_symbol = 0;
         //fprintf(stdout, "Введите имя исходного файла (или пустую строку для завершения):\n");
         fprintf(stdout, "Enter a name for the source file (or empty text to complete):\n");
