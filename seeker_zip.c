@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     int counter_Central_directory_file_header_signature = 0;
     int counter_End_of_central_directory_record_signature = 0;
     int flag_zip = 0;
+    int flag_deduction__Local_file_headers_signature = 0;
 
     if(argc < 2)
     {
@@ -140,6 +141,7 @@ int main(int argc, char *argv[])
               printf("%s\n", name_target);
               memset(name_target, 0, SIZE);
               counter_Local_file_headers_signature++;
+              flag_deduction__Local_file_headers_signature = 1;
            }
            #endif // 2
            #if 1
@@ -175,7 +177,8 @@ int main(int argc, char *argv[])
                   printf("This file contains a ZIP archive. Files included in this ZIP archive:\n");
                   flag_zip = 1;
               }
-              printf("%s\n", name_target);
+              if(flag_deduction__Local_file_headers_signature == 0)
+                    printf("%s\n", name_target);
               memset(name_target, 0, SIZE);
               counter_Central_directory_file_header_signature++;
 
@@ -229,6 +232,7 @@ int main(int argc, char *argv[])
         }
 
         end_circle:
+        fclose(fs);
         memset(name_source, 0, SIZE);
         counter_Local_file_headers_signature = 0;
         counter_Central_directory_file_header_signature = 0;
